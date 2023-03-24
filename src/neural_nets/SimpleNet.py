@@ -13,6 +13,7 @@ class SimpleNet(nn.Module):
         self.fc2 = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
+        # print(x.shape)
         x = self.fc1(x)
         x = self.relu(x)
         x = self.fc2(x)

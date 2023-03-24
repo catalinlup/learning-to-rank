@@ -16,12 +16,40 @@ def normalize_features(features: np.ndarray, epsilon=1e-5) -> np.ndarray:
     return (features - mean) / std
 
 
+def _convert_subset_to_tensor(subset: Subset) -> torch.tensor:
+    """
+    Converts the provided subset to a tensor
+"""
+    feature_vecs = []
+
+    for v in subset:
+        if v.nelement() == 0:
+            continue
+        feature_vecs.append(v)
+    
+    if len(feature_vecs) == 1:
+        return feature_vecs[0]
+    
+    # if feature_vecs[0].shape != feature_vecs[1].shape:
+    #     print(feature_vecs)
+    # print(feature_vecs[0].size())
+    # print(feature_vecs[1].size())
+    # print('###')
+    return torch.stack(feature_vecs)
+    
+  
 def create_data_loader(y: np.ndarray, X: np.ndarray, batch_size: int) -> DataLoader:
     sequence = list(range(y.shape[0]))
     np.random.shuffle(sequence)
-    num_batches = len(y.shape[0]) // batch_size
+    num_batches = y.shape[0] // batch_size
 
-    subsets = [Subset(torch.stack([y, X], dim=0), sequence[i * batch_size: (i + 1) * batch_size]) for i in range(num_batches)]
-    train_loader = [DataLoader(sub, batch_size=batch_size) for sub in subsets]  # Create multiple batches, each with BS number of samples
+    subsets = [_convert_subset_to_tensor(Subset(X, sequence[i * batch_size: (i + 1) * batch_size])) for i in range(num_batches )]
+    y_subsets = [_convert_subset_to_tensor(Subset(y, sequence[i * batch_size: (i + 1) * batch_size])) for i in range(num_batches - 1)]
 
+    subsets = list(filter(lambda x: x!= None, subsets))
+    y_subsets = list(filter(lambda x: x!= None, y_subsets))
+    # print(_convert_subset_to_tensor(y_subsets[0]))
+    # print(_convert_subset_to_tensor(subsets[0]).shape)
+    train_loader = [(sub_x, sub_y) for sub_x, sub_y in zip(subsets, y_subsets)]  # Create multiple batches, each with BS number of samples
+    # print(train_loader)
     return train_loader
