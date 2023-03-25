@@ -1,17 +1,15 @@
-from data_loaders import get_dataset
+from data_loaders import load_pairwise_dataset
 from preprocessing import normalize_features, create_data_loader
 from sklearn.model_selection import train_test_split
-from neural_nets.SimpleNet import SimpleNet
+from neural_nets.RankNet import RankNet
 import torch
 import torch.optim as optim
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
+from loss_functions import ranknet_loss
 
-
-
-qids, y, X = get_dataset('../data/MQ2008/min.txt')
+qids, y, X = load_pairwise_dataset()
 X_normalized = normalize_features(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=21)
@@ -23,18 +21,20 @@ y_train = torch.from_numpy(y_train).type(torch.FloatTensor)
 y_test = torch.from_numpy(y_test).type(torch.FloatTensor)
 
 # define the model and params
-net = SimpleNet(46, 5)
+net = RankNet(46, 5)
 
-optimizer = optim.Adam(net.parameters(), lr=1e-3)
-num_epochs = 100
+optimizer = optim.Adam(net.parameters(), lr=1e-4)
+num_epochs = 50
 batch_size = 64
 
-loss_fn = nn.MSELoss()
+loss_fn = nn.BCELoss()
 
 loader = create_data_loader(y_train, X_train, batch_size)
 
 losses = []
 test_losses = []
+
+# print(X_test.shape)
 
 for epoch in range(num_epochs):
 
@@ -44,6 +44,7 @@ for epoch in range(num_epochs):
         test_losses.append(test_loss)
 
     running_loss = []
+
 
     for input, y in loader:
         optimizer.zero_grad()
@@ -62,12 +63,6 @@ for epoch in range(num_epochs):
     mean_loss = np.mean(running_loss)
     losses.append(mean_loss)
 
-    # print(f'Epoch {epoch} - Loss: {mean_loss}')
-
-    # Compute the test loss
-
-
-  
 
     print(f'Epoch {epoch} - Train Loss: {mean_loss} | Test Loss: {test_loss}')
 
@@ -76,12 +71,8 @@ for epoch in range(num_epochs):
 # Plot the learning curve
 plt.plot(losses[1:], label='Train Loss')
 plt.plot(test_losses[1:], label='Test Loss')
-plt.title('Learning curves')
-plt.ylabel('MSE Loss')
+plt.title('Ranknet Learning curves')
+plt.ylabel('Ranknet Loss')
 plt.xlabel('#Epoch')
 plt.legend()
-plt.savefig('../plots/learning_curve.png')
-
-
-
-
+plt.savefig('../plots/learning_curve_ranknet.png')

@@ -1,4 +1,6 @@
 import numpy as np
+import pickle
+import random
 
 def process_line(line: str) -> np.ndarray:
 
@@ -34,5 +36,86 @@ def process_dataset(dataset: str):
 def get_dataset(path: str):
     with open(path, 'r') as file:
         return process_dataset(file.read())
+
+
+
+
+def group_data_by_query_id(qids, scores, features):
+    data_by_query = {}
+
+    for i, qid in enumerate(qids):
+        if qid not in data_by_query.keys():
+            data_by_query[qid] = list()
+        
+        data_by_query[qid].append((scores[i], features[i]))
+    
+    return data_by_query
+
+def compute_pairwise_dataset_for_query(qid, data_by_query, score_equal_drop_prob=0.85):
+    score_features_list = data_by_query[qid]
+    
+
+    pairwise_features = []
+    target_probabilities = []
+
+    for i in range(len(score_features_list)):
+        for j in range(len(score_features_list)):
+
+            if i == j:
+                continue
+
+            score_i, features_i = score_features_list[i][0], score_features_list[i][1]
+            score_j, features_j = score_features_list[j][0], score_features_list[j][1]
+
+            if score_i == score_j:
+                rnd = random.random()
+
+                if rnd < score_equal_drop_prob:
+                    continue
+
+            combined_feature = np.concatenate([features_i, features_j])
+            target_probability = 1.0 if score_i > score_j else (0.5 if score_i == score_j else 0.0)
+
+            pairwise_features.append(combined_feature)
+            target_probabilities.append(target_probability)
+
+    return pairwise_features, target_probabilities
+    
+
+def get_pairwise_dataset(path: str):
+    qids, scores, features = get_dataset(path)
+
+    # group dataset by query id
+    data_by_query = group_data_by_query_id(qids, scores, features)
+
+    unique_qids = list(set(list(qids)))
+
+    pairwise_qids = []
+    pairwise_target_probabilities = []
+    pairwise_features = []
+
+    for i, qid in enumerate(unique_qids):
+        print(f'{i} / {len(unique_qids)}')
+        f, p = compute_pairwise_dataset_for_query(qid, data_by_query)
+
+
+        pairwise_qids += [qid] * len(p)
+        pairwise_target_probabilities += p
+        pairwise_features += f
+
+    
+    return np.array(pairwise_qids), np.array(pairwise_target_probabilities), np.stack(pairwise_features)
+
+
+def load_pairwise_dataset():
+    """
+    Load the the pairwise training dataset used in ranknet training.
+    """
+    qids = pickle.load(open('../data/PairwiseMQ2008/qids.pickle', 'rb'))
+    target_probabilities = pickle.load(open('../data/PairwiseMQ2008/target_p.pickle', 'rb'))
+    features = pickle.load(open('../data/PairwiseMQ2008/features.pickle', 'rb'))
+
+    return qids, target_probabilities, features
+
 
 
