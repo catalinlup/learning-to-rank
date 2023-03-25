@@ -67,11 +67,11 @@ def compute_pairwise_dataset_for_query(qid, data_by_query, score_equal_drop_prob
             score_i, features_i = score_features_list[i][0], score_features_list[i][1]
             score_j, features_j = score_features_list[j][0], score_features_list[j][1]
 
-            if score_i == score_j:
-                rnd = random.random()
+            # if score_i == score_j:
+            #     rnd = random.random()
 
-                if rnd < score_equal_drop_prob:
-                    continue
+            #     if rnd < score_equal_drop_prob:
+            #         continue
 
             combined_feature = np.concatenate([features_i, features_j])
             target_probability = 1.0 if score_i > score_j else (0.5 if score_i == score_j else 0.0)
@@ -107,15 +107,15 @@ def get_pairwise_dataset(path: str):
     return np.array(pairwise_qids), np.array(pairwise_target_probabilities), np.stack(pairwise_features)
 
 
-def load_pairwise_dataset():
+def load_dataset(folder):
     """
     Load the the pairwise training dataset used in ranknet training.
     """
-    qids = pickle.load(open('../data/PairwiseMQ2008/qids.pickle', 'rb'))
-    target_probabilities = pickle.load(open('../data/PairwiseMQ2008/target_p.pickle', 'rb'))
-    features = pickle.load(open('../data/PairwiseMQ2008/features.pickle', 'rb'))
+    qids = pickle.load(open(f'{folder}/qids.pickle', 'rb'))
+    y = pickle.load(open(f'{folder}/y.pickle', 'rb'))
+    X = pickle.load(open(f'{folder}/X.pickle', 'rb'))
 
-    return qids, target_probabilities, features
+    return qids, y, X
 
 
 

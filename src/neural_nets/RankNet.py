@@ -32,3 +32,4 @@ class RankNet(nn.Module):
         x_second = self.fc2(x_second)
 
         return self.sigmoid(x_first - x_second).squeeze(dim=1)
+    

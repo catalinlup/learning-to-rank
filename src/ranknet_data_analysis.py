@@ -1,4 +1,4 @@
-from data_loaders import load_pairwise_dataset
+from data_loaders import load_dataset
 from preprocessing import normalize_features, create_data_loader
 from sklearn.model_selection import train_test_split
 from neural_nets.RankNet import RankNet
@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from loss_functions import ranknet_loss
 
-qids, y, X = load_pairwise_dataset()
+qids, y, X = load_dataset('../data/train/PairwiseMQ2008')
 
 y = y * 10
 y = y.astype(np.int32)
