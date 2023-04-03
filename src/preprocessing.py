@@ -2,6 +2,7 @@ import numpy as np
 from torch.utils.data import DataLoader, Subset
 import torch
 
+
 def normalize_features(features: np.ndarray, epsilon=1e-5) -> np.ndarray:
     """
     Normalizes the provided scores

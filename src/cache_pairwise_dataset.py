@@ -11,15 +11,11 @@ import argparse
 import pickle
 
 
-
-
-
 qids, y, X = get_pairwise_dataset('../data/MQ2008/min.txt')
 
 pickle.dump(qids, open('../data/PairwiseMQ2008/qids.pickle', 'wb'))
 pickle.dump(y, open('../data/PairwiseMQ2008/target_p.pickle', 'wb'))
 pickle.dump(X, open('../data/PairwiseMQ2008/features.pickle', 'wb'))
-
 
 # print(qids)
 # print(y)

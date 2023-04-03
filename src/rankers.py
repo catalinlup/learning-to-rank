@@ -15,7 +15,6 @@ def simple_ranker(net: SimpleNet, X: np.ndarray):
 
     # print(predicted)
 
-
     return predicted.detach().numpy().T[0]
 
 
@@ -47,7 +46,4 @@ def pairwise_ranker(net: RankNet, X: np.ndarray):
     for rank, index in enumerate(sorted_doc_indices):
         ranks[index] = rank + 1
 
-
     return ranks
-    
-

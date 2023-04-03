@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def dsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
     """
     Computes the dsg score for the predicted ranks.
@@ -32,6 +33,5 @@ def ndsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
     """
 
     actual_ranks += 1
-
 
     return dsg(predicted_ranks, actual_ranks) / idsg(actual_ranks)

@@ -1,4 +1,7 @@
-from data_loaders import load_pairwise_dataset
+import sys
+
+from data_loaders import get_pairwise_dataset
+from experiments import EXPERIMENTS
 from preprocessing import normalize_features, create_data_loader
 from sklearn.model_selection import train_test_split
 from neural_nets.RankNet import RankNet
@@ -9,7 +12,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from loss_functions import ranknet_loss
 
-qids, y, X = load_pairwise_dataset()
+
+experiment = EXPERIMENTS[sys.argv[1]]
+qids, y, X = get_pairwise_dataset(experiment['train_folder'])
 X_normalized = normalize_features(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=21)
@@ -45,7 +50,6 @@ for epoch in range(num_epochs):
 
     running_loss = []
 
-
     for input, y in loader:
         optimizer.zero_grad()
 
@@ -63,9 +67,7 @@ for epoch in range(num_epochs):
     mean_loss = np.mean(running_loss)
     losses.append(mean_loss)
 
-
     print(f'Epoch {epoch} - Train Loss: {mean_loss} | Test Loss: {test_loss}')
-
 
 
 # Plot the learning curve
