@@ -18,6 +18,22 @@ def ranknet_loss(pred1, pred2, target_probability):
     return torch.mean(losses)
 
 
+def neuralNDCG_wrap(
+        y_pred, y_true, temperature=1e-4, powered_relevancies=True, k=None, stochastic=False,
+        n_samples=1024, beta=0.001):
+
+    return neuralNDCG(
+        torch.tensor([y_pred.tolist()]),
+        torch.tensor([y_true.tolist()]),
+        temperature=temperature,
+        powered_relevancies=powered_relevancies,
+        k=k,
+        stochastic=stochastic,
+        n_samples=n_samples,
+        beta=beta
+    ).item()
+
+
 def neuralNDCG(y_pred, y_true, padded_value_indicator=-1, temperature=1., powered_relevancies=True, k=None,
                stochastic=False, n_samples=32, beta=0.1, log_scores=True):
     """

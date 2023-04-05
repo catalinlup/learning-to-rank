@@ -1,8 +1,9 @@
+from loss_functions import neuralNDCG, neuralNDCG_wrap
 from neural_nets.RankNet import RankNet
 from neural_nets.SimpleNet import SimpleNet
 import torch.nn as nn
 from rankers import simple_ranker, pairwise_ranker
-from metrics import ndsg
+from metrics import ndsg, mse, mape
 
 EXPERIMENTS = {
     'RankNet': {
@@ -38,6 +39,26 @@ EXPERIMENTS = {
         'layer_structure': [46, 5],
         'metrics': {
             'ndsg': ndsg
+        }
+    },
+
+    'NeuralNDCG': {
+        'train_folder': '../data/train/MQ2008',
+        'experiment_name': 'neural_ndcg_net',
+        'ranker': simple_ranker,
+        'lr': 1e-3,
+        'batch_size': 64,
+        'num_epochs': 100,
+        'model_name': 'neural_ndcg_net.pt',
+        'plot_y_label_name': 'Neural NDCG Loss',
+        'plot_name': 'neural_ndcg_net.png',
+        'model': SimpleNet(46, 5),
+        'loss_fn': neuralNDCG_wrap,
+        'layer_structure': [46, 5],
+        'metrics': {
+            'ndsg': ndsg,
+            'mse': mse,
+            'mape': mape
         }
     }
 }

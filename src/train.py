@@ -74,10 +74,10 @@ def train_test_loop():
     plt.plot(losses[1:], label='Train Loss')
     plt.plot(test_losses[1:], label='Test Loss')
     plt.title('Learning curves')
-    plt.ylabel('MSE Loss')
+    plt.ylabel(experiment['plot_y_label_name'])
     plt.xlabel('#Epoch')
     plt.legend()
-    plt.savefig(f'../plots/{experiment["plot_name"]}.png')
+    plt.savefig(f'../plots/{experiment["plot_name"]}')
 
 
 def train_loop():
