@@ -56,11 +56,8 @@ for qid in data.keys():
 
     if np.sum(scores) < 1:
         continue
-
  
     predicted_ranks = ranker(model, features)
-
-
 
     for metric_name in experiment['metrics'].keys():
         metrics_acc[metric_name].append(experiment['metrics'][metric_name](predicted_ranks, scores))
@@ -74,5 +71,3 @@ for metric_name in metrics_acc.keys():
     metric_mean[metric_name] = np.mean(np.array(metrics_acc[metric_name]))
 
 json.dump(metric_mean, open(f'../evaluation/{experiment["experiment_name"]}.json', 'w'))
-
-

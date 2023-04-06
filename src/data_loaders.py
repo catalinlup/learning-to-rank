@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 import random
 
+
 def process_line(line: str) -> np.ndarray:
 
     line_without_comment = line.split('#')[0]
@@ -11,9 +12,7 @@ def process_line(line: str) -> np.ndarray:
     qid = int(features[1].split(':')[1].strip())
     processed_features = list(map(lambda x: float(x.split(':')[1].strip()), features[2:]))
 
-
     return qid, score, np.array(processed_features)
-
 
 
 def process_dataset(dataset: str):
@@ -38,8 +37,6 @@ def get_dataset(path: str):
         return process_dataset(file.read())
 
 
-
-
 def group_data_by_query_id(qids, scores, features):
     data_by_query = {}
 
@@ -51,9 +48,9 @@ def group_data_by_query_id(qids, scores, features):
     
     return data_by_query
 
+
 def compute_pairwise_dataset_for_query(qid, data_by_query, score_equal_drop_prob=0.85):
     score_features_list = data_by_query[qid]
-    
 
     pairwise_features = []
     target_probabilities = []
@@ -102,7 +99,6 @@ def get_pairwise_dataset(path: str):
         pairwise_qids += [qid] * len(p)
         pairwise_target_probabilities += p
         pairwise_features += f
-
     
     return np.array(pairwise_qids), np.array(pairwise_target_probabilities), np.stack(pairwise_features)
 
@@ -116,6 +112,3 @@ def load_dataset(folder):
     X = pickle.load(open(f'{folder}/X.pickle', 'rb'))
 
     return qids, y, X
-
-
-

@@ -36,7 +36,6 @@ batch_size = experiment['batch_size']
 loss_fn = experiment['loss_fn']
 
 
-
 def train_test_loop():
     loader = create_data_loader(y_train, X_train, batch_size)
 
@@ -69,20 +68,16 @@ def train_test_loop():
         mean_loss = np.mean(running_loss)
         losses.append(mean_loss)
 
-
         print(f'Epoch {epoch} - Train Loss: {mean_loss} | Test Loss: {test_loss}')
-
-
 
     # Plot the learning curve
     plt.plot(losses[1:], label='Train Loss')
     plt.plot(test_losses[1:], label='Test Loss')
     plt.title('Learning curves')
-    plt.ylabel('MSE Loss')
+    plt.ylabel(experiment['plot_y_label_name'])
     plt.xlabel('#Epoch')
     plt.legend()
-    plt.savefig(f'../plots/{experiment["plot_name"]}.png')
-
+    plt.savefig(f'../plots/{experiment["plot_name"]}')
 
 
 def train_loop():
@@ -98,7 +93,6 @@ def train_loop():
             optimizer.zero_grad()
 
             predicted = net(input)
-
             
             loss = loss_fn(predicted, y)
             loss.backward()
@@ -110,9 +104,7 @@ def train_loop():
         mean_loss = np.mean(running_loss)
         losses.append(mean_loss)
 
-
         print(f'Epoch {epoch} - Full Train Loss: {mean_loss}')
-
 
     torch.save(net.state_dict(), f'../models/{experiment["model_name"]}')
 
@@ -122,4 +114,3 @@ if sys.argv[2] == 'full_train':
 
 elif sys.argv[2] == 'train_test':
     train_test_loop()
-

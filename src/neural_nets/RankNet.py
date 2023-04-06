@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class RankNet(nn.Module):
     """
     Defines a simple neural network for regression purposes
@@ -32,4 +33,3 @@ class RankNet(nn.Module):
         x_second = self.fc2(x_second)
 
         return self.sigmoid(x_first - x_second).squeeze(dim=1)
-    

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class SimpleNet(nn.Module):
     """
     Defines a simple neural network for regression purposes

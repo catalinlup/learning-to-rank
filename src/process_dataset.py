@@ -3,7 +3,6 @@ from data_loaders import get_dataset, get_pairwise_dataset
 import pickle
 
 
-
 def save_dataset(qids, X, y, folder):
     """
     Save the dataset in the provided folder.
@@ -24,6 +23,7 @@ def generate_random_mask(size, ratio_positives):
 
     return mask
 
+
 def split_dataset(qids, X, y, evaluation_size=0.1):
     """
     Splits the dataset into train and test based on the questions.
@@ -40,12 +40,10 @@ def split_dataset(qids, X, y, evaluation_size=0.1):
     y_train = []
     y_evaluation = []
 
-    
     # get the evaluation and train qids
     unique_qids = np.unique(qids)
     random_mask = generate_random_mask(unique_qids.size, evaluation_size)
     evaluation_qids = set(unique_qids[random_mask])
-
 
     for i, qid in enumerate(qids):
         if qid in evaluation_qids:
@@ -68,7 +66,6 @@ def split_dataset(qids, X, y, evaluation_size=0.1):
     y_evaluation = np.stack(y_evaluation)
     y_train = np.stack(y_train)
 
-
     return qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation
 
 
@@ -82,8 +79,6 @@ def upsample_pairwise_dataset(qids: np.ndarray, X: np.ndarray, y: np.ndarray):
     labels = y * 10
     labels = labels.astype(np.int32)
 
-
-    
     index_at_0 = np.argwhere(labels == 0).T[0]
     index_at_5 = np.argwhere(labels == 5).T[0]
     index_at_10 = np.argwhere(labels == 10).T[0]
@@ -97,27 +92,20 @@ def upsample_pairwise_dataset(qids: np.ndarray, X: np.ndarray, y: np.ndarray):
     samples_at_0 = np.random.choice(index_at_0, size=cnt_5)
     samples_at_10 = np.random.choice(index_at_10, size=cnt_5)
 
-  
-
-
-
     qids_upsampled = np.array(list(qids[index_at_5]) + list(qids[samples_at_0]) + list(qids[samples_at_10]))
     X_upsampled = np.stack(list(X[index_at_5]) + list(X[samples_at_0]) + list(X[samples_at_10]))
     y_upsampled = np.array(list(y[index_at_5]) + list(y[samples_at_0]) + list(y[samples_at_10]))
 
-
-    
     # reshufle the upsampled dataset
     reshuffled_indices = np.arange(qids_upsampled.size).astype(np.int32)
     np.random.shuffle(reshuffled_indices)
-
 
     qids_upsampled = qids_upsampled[reshuffled_indices]
     X_upsampled = X_upsampled[reshuffled_indices]
     y_upsampled = y_upsampled[reshuffled_indices]
 
-
     return qids_upsampled, y_upsampled, X_upsampled
+
 
 # Split the MQ2008 dataset
 def process_MQ2008():
@@ -129,7 +117,6 @@ def process_MQ2008():
     qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = split_dataset(qids, X, y)
     save_dataset(qids_train, X_train, y_train, '../data/train/MQ2008')
     save_dataset(qids_evaluation, X_evaluation, y_evaluation, '../data/evaluation/MQ2008')
-
 
 
 # Split the MQ2008 pairwise dataset
@@ -153,10 +140,3 @@ def process_MQ2008_Pairwise():
 
 process_MQ2008()
 process_MQ2008_Pairwise()
-
-
-
-    
-
-
-
