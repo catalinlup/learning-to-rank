@@ -29,6 +29,7 @@ def process_dataset(dataset: str):
         scores.append(score)
         features.append(feature_vec)
 
+    # print(scores)
     return np.array(qids), np.array(scores), np.stack(features)
 
 

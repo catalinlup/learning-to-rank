@@ -14,19 +14,19 @@ experiment = EXPERIMENTS[sys.argv[1]]
 
 
 qids, y_full, X = load_dataset(experiment['train_folder'])
-X_normalized = normalize_features(X)
+X_normalized = [normalize_features(x) for x in X]
 
-print(X.shape)
+# print(X.shape)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y_full, test_size=0.33, random_state=21)
 
 # convert the data to tensors
-X_train = torch.from_numpy(X_train).type(torch.FloatTensor)
-X_test = torch.from_numpy(X_test).type(torch.FloatTensor)
-y_train = torch.from_numpy(y_train).type(torch.FloatTensor)
-y_test = torch.from_numpy(y_test).type(torch.FloatTensor)
-X_normalized = torch.from_numpy(X_normalized).type(torch.FloatTensor)
-y_full = torch.from_numpy(y_full).type(torch.FloatTensor)
+X_train = [torch.from_numpy(x).type(torch.FloatTensor) for x in X_train]
+X_test = [torch.from_numpy(x).type(torch.FloatTensor) for x in X_test]
+y_train = [torch.from_numpy(x).type(torch.FloatTensor) for x in y_train]
+y_test = [torch.from_numpy(x).type(torch.FloatTensor) for x in y_test]
+X_normalized = [torch.from_numpy(x).type(torch.FloatTensor) for x in X_normalized]
+y_full = [torch.from_numpy(x).type(torch.FloatTensor) for x in y_full]
 
 # define the model and params
 net = experiment['model']
@@ -44,7 +44,6 @@ loss_fn = experiment['loss_fn']
 
 
 def train_test_loop():
-    loader = create_data_loader(y_train, X_train, batch_size)
 
     losses = []
     test_losses = []
@@ -52,24 +51,41 @@ def train_test_loop():
     for epoch in range(num_epochs):
 
         with torch.no_grad():
-            print(X_test.shape)
-            predicted_test = net(X_test)
-            test_loss = loss_fn(predicted_test, y_test).item()
+            # print(X_test.shape)
+            test_loss = []
+            for X_test_1, y_test_1 in zip(X_test, y_test):
+                X_test_1 = X_test_1.unsqueeze(dim = 0)
+                y_test_1 = y_test_1.unsqueeze(dim = 0)
+                predicted_test = net(X_test_1)
+                test_loss_1 = loss_fn(predicted_test, y_test_1).item()
+                test_loss.append(test_loss_1)
+
+            test_loss = np.mean(np.array(test_loss))
             test_losses.append(test_loss)
 
         running_loss = []
 
-        for input, y in loader:
-
+        for input, y in zip(X_train, y_train):
+            
+            # print(input.shape)
+            # print(y.shape)
+            # print('Hi')
+            input = input.unsqueeze(dim = 0)
+            y = y.unsqueeze(dim = 0)
            
             optimizer.zero_grad()
 
             predicted = net(input)
 
+            # predicted = predicted.unsqueeze(dim = 0)
+            # print(predicted.shape)
+
+
            
-            
             loss = loss_fn(predicted, y)
+            # print(loss)
             loss.backward()
+
 
 
             optimizer.step()
@@ -92,7 +108,7 @@ def train_test_loop():
 
 
 def train_loop():
-    loader = create_data_loader(y_full, X_normalized, batch_size)
+    # loader = create_data_loader(y_full, X_normalized, batch_size)
 
     losses = []
 
@@ -100,7 +116,11 @@ def train_loop():
 
         running_loss = []
 
-        for input, y in loader:
+        for input, y in zip(X_normalized, y_full):
+            
+            input = input.unsqueeze(dim = 0)
+            y = y.unsqueeze(dim = 0)
+
             optimizer.zero_grad()
 
             predicted = net(input)

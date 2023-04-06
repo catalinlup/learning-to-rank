@@ -11,7 +11,8 @@ def get_torch_device():
 
     :return: CUDA-capable GPU if available, CPU otherwise
     """
-    return torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+    return 'cpu'
+    # return torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
 
 def sinkhorn_scaling(mat, mask=None, tol=1e-6, max_iter=50):

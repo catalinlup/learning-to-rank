@@ -68,6 +68,45 @@ def split_dataset(qids, X, y, evaluation_size=0.1):
 
     return qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation
 
+def split_dataset_qbq(qids, X, y, evaluation_size=0.1):
+    """
+    Splits the dataset into train and test based on the questions.
+    Keyword arguments:
+    qids -- the array containing the query ids
+    X -- the feature matrix
+    y -- the label (rank) matrix
+    """
+
+    qids_train = []
+    qids_evaluation = []
+    X_train = []
+    X_evaluation = []
+    y_train = []
+    y_evaluation = []
+
+    # get the evaluation and train qids
+    unique_qids = np.unique(qids)
+    random_mask = generate_random_mask(unique_qids.size, evaluation_size)
+    evaluation_qids = set(unique_qids[random_mask])
+
+    for i, qid in enumerate(qids):
+        if qid in evaluation_qids:
+
+            qids_evaluation.append(qid)
+            X_evaluation.append(X[i])
+            y_evaluation.append(y[i])
+
+        else:
+            qids_train.append(qid)
+            X_train.append(X[i])
+            y_train.append(y[i])
+    
+    qids_evaluation = np.array(qids_evaluation)
+    qids_train = np.array(qids_train)
+
+
+
+    return qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation
 
 def upsample_pairwise_dataset(qids: np.ndarray, X: np.ndarray, y: np.ndarray):
     """
@@ -107,6 +146,41 @@ def upsample_pairwise_dataset(qids: np.ndarray, X: np.ndarray, y: np.ndarray):
     return qids_upsampled, y_upsampled, X_upsampled
 
 
+def upsample_dataset(qids: np.ndarray, X: np.ndarray, y: np.ndarray):
+    """
+    Upsamples the normal dataset.
+    """
+    labels = y.astype(np.int32)
+
+    index_at_0 = np.argwhere(labels == 1).T[0]
+    index_at_5 = np.argwhere(labels == 0).T[0]
+    index_at_10 = np.argwhere(labels == 2).T[0]
+
+
+
+    # perform upsampling
+    
+    # count the number of instances that have the index at 5
+    cnt_5 = index_at_5.size
+
+    # sample cnt_5 items with the score of 0 and cnt_5 items with the score of 10
+    samples_at_0 = np.random.choice(index_at_0, size=cnt_5)
+    samples_at_10 = np.random.choice(index_at_10, size=cnt_5)
+
+    qids_upsampled = np.array(list(qids[index_at_5]) + list(qids[samples_at_0]) + list(qids[samples_at_10]))
+    X_upsampled = np.stack(list(X[index_at_5]) + list(X[samples_at_0]) + list(X[samples_at_10]))
+    y_upsampled = np.array(list(y[index_at_5]) + list(y[samples_at_0]) + list(y[samples_at_10]))
+
+    # reshufle the upsampled dataset
+    reshuffled_indices = np.arange(qids_upsampled.size).astype(np.int32)
+    np.random.shuffle(reshuffled_indices)
+
+    qids_upsampled = qids_upsampled[reshuffled_indices]
+    X_upsampled = X_upsampled[reshuffled_indices]
+    y_upsampled = y_upsampled[reshuffled_indices]
+
+    return qids_upsampled, y_upsampled, X_upsampled
+
 # Split the MQ2008 dataset
 def process_MQ2008():
     """
@@ -115,7 +189,9 @@ def process_MQ2008():
     qids, y, X = get_dataset('../data/MQ2008/min.txt')
 
     qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = split_dataset(qids, X, y)
-    save_dataset(qids_train, X_train, y_train, '../data/train/MQ2008')
+
+ 
+    save_dataset(qids_train, y_train, X_train, '../data/train/MQ2008')
     save_dataset(qids_evaluation, X_evaluation, y_evaluation, '../data/evaluation/MQ2008')
 
 
@@ -138,5 +214,86 @@ def process_MQ2008_Pairwise():
     save_dataset(qids_upsampled, X_upsampled, y_upsampled, '../data/train/PairwiseMQ2008')
 
 
-process_MQ2008()
-process_MQ2008_Pairwise()
+def process_MQ2008_Grouped():
+    """
+    Process the MQ2008 pairwise dataset grouped by query
+    """
+
+    qids, y, X = get_dataset('../data/MQ2008/min.txt')
+    unique_quids = np.unique(qids)
+
+    y_grouped = []
+    X_grouped = []
+    qids_grouped = []
+
+    for qid in unique_quids:
+        mask = (qids == qid)
+
+        y_g = y[mask]
+        X_g = X[mask]
+
+        if y_g.shape[0] != 8:
+            continue
+
+        y_grouped.append(y_g)
+        X_grouped.append(X_g)
+        qids_grouped.append(qid)
+
+    # print(y_grouped[100].shape)
+    y_grouped = np.stack(y_grouped)
+    X_grouped = np.stack(X_grouped)
+    qids_grouped = np.array(qids_grouped)
+
+    # print(y_grouped.shape)
+    # print(X_grouped.shape)
+    # print(qids_grouped.shape)
+
+    qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = split_dataset(qids_grouped, X_grouped, y_grouped)
+
+    # print(X_train.shape)
+
+    # save the evaluation dataset
+    save_dataset(qids_evaluation, X_evaluation, y_evaluation, '../data/evaluation/GroupedMQ2008')
+
+    # upsample the train dataset
+    # save the upsampled dataset
+    save_dataset(qids_train, X_train, y_train, '../data/train/GroupedMQ2008')
+
+def process_MQ2008_Grouped_QbQ():
+    """
+    Process the MQ2008 pairwise dataset grouped by query
+    """
+
+    qids, y, X = get_dataset('../data/MQ2008/min.txt')
+    unique_quids = np.unique(qids)
+
+    y_grouped = []
+    X_grouped = []
+    qids_grouped = []
+
+    for qid in unique_quids:
+        mask = (qids == qid)
+
+        y_g = y[mask]
+        X_g = X[mask]
+
+
+        y_grouped.append(y_g)
+        X_grouped.append(X_g)
+        qids_grouped.append(qid)
+
+    qids_grouped = np.array(qids_grouped)
+
+
+    qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = split_dataset_qbq(qids_grouped, X_grouped, y_grouped)
+
+
+    save_dataset(qids_evaluation, X_evaluation, y_evaluation, '../data/evaluation/GroupedQbQMQ2008')
+
+
+    save_dataset(qids_train, X_train, y_train, '../data/train/GroupedQbQMQ2008')
+
+# process_MQ2008()
+# process_MQ2008_Pairwise()
+# process_MQ2008_Grouped()
+process_MQ2008_Grouped_QbQ()

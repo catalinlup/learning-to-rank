@@ -9,9 +9,7 @@ def normalize_features(features: np.ndarray, epsilon=1e-5) -> np.ndarray:
     """
 
     mean = np.mean(features, axis=0)
-    # print(mean.shape)
     var = np.mean((features - mean) ** 2, axis=0)
-    # print(var.shape)
     std = np.sqrt(var + epsilon)
 
     return (features - mean) / std

@@ -1,7 +1,7 @@
 import numpy as np
+from utils import DEFAULT_EPS
 
-
-def dsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
+def dsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray, k):
     """
     Computes the dsg score for the predicted ranks.
 
@@ -13,7 +13,7 @@ def dsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
     """
 
     sorted_indexes = np.flip(np.argsort(predicted_ranks))
-    sorted_actual_ranks = actual_ranks[sorted_indexes]
+    sorted_actual_ranks = actual_ranks[sorted_indexes][:k]
 
     rank_vector = np.power(2, sorted_actual_ranks) - 1
     log_vector = np.log2(np.arange(2, rank_vector.size + 2))
@@ -21,7 +21,7 @@ def dsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
     return np.sum(rank_vector / log_vector)
 
 
-def idsg(actual_ranks: np.ndarray):
+def idsg(actual_ranks: np.ndarray, k):
     """
     Compute the ideal discounted cumulative gain.
 
@@ -30,7 +30,7 @@ def idsg(actual_ranks: np.ndarray):
     Returns:
         Ideal DSG score
     """
-    sorted_actual_ranks = np.flip(np.sort(actual_ranks))
+    sorted_actual_ranks = np.flip(np.sort(actual_ranks))[:k]
 
     rank_vector = np.power(2, sorted_actual_ranks) - 1
     log_vector = np.log2(np.arange(2, rank_vector.size + 2))
@@ -38,7 +38,7 @@ def idsg(actual_ranks: np.ndarray):
     return np.sum(rank_vector / log_vector)
 
 
-def ndsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
+def ndsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray, k=None):
     """
     Computes the normalized discounted gain.
 
@@ -49,79 +49,19 @@ def ndsg(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
         Normalized DSG score
     """
 
-    actual_ranks += 1
-
-    return dsg(predicted_ranks, actual_ranks) / idsg(actual_ranks)
-
-
-def mse(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
-    """
-    Compute the Mean Squared Error.
-
-    Args:
-        predicted_ranks: Predicted ranks numpy array.
-        actual_ranks: True ranks numpy array.
-    Returns:
-        MSE score
-    """
-    output_errors = np.average((actual_ranks - predicted_ranks) ** 2, axis=0)
-
-    return np.average(output_errors)
+    if k == None:
+        try:
+            k = predicted_ranks.shape[0]
+        except:
+            k = len(predicted_ranks)
 
 
-def mape(predicted_ranks: np.ndarray, actual_ranks: np.ndarray):
-    """
-    Mean absolute percentage error (MAPE).
-
-    Args:
-        predicted_ranks: Predicted ranks numpy array.
-        actual_ranks: True ranks numpy array.
-    Returns:
-        MAPE score
-    """
-    epsilon = np.finfo(np.float64).eps
-    map_error = np.abs(predicted_ranks - actual_ranks) / np.maximum(np.abs(actual_ranks), epsilon)
-    output_errors = np.average(map_error, axis=0)
-
-    return np.average(output_errors)
+    return dsg(predicted_ranks, actual_ranks + 1, k) / idsg(actual_ranks + 1, k)
 
 
-def mrr(rs: np.ndarray):
-    """
-    Score is reciprocal of the rank of the first relevant item
-    First element is 'rank 1'.  Relevance is binary (nonzero is relevant).
-
-    Args:
-        rs: Iterator of relevance scores (list or numpy) in rank order
-            (first element is the first item)
-    Returns:
-        Mean reciprocal rank
-    """
-    rs = (np.asarray(r).nonzero()[0] for r in rs)
-
-    return np.mean([1. / (r[0] + 1) if r.size else 0. for r in rs])
 
 
-def r_precision(r: np.ndarray):
-    """
-    Score is precision after all relevant documents have been retrieved
-    Relevance is binary (nonzero is relevant).
-
-    Args:
-        r: Relevance scores (list or numpy) in rank order
-            (first element is the first item)
-    Returns:
-        R Precision
-    """
-    r = np.asarray(r) != 0
-    z = r.nonzero()[0]
-    if not z.size:
-        return 0.
-
-    return np.mean(r[:z[-1] + 1])
-
-
-def precision_at_k(r: np.ndarray, k: int):
+def precision_at_k(y_pred: np.ndarray, y_true: int, k):
     """
     Score is precision @ k
     Relevance is binary (nonzero is relevant).
@@ -139,15 +79,28 @@ def precision_at_k(r: np.ndarray, k: int):
     Raises:
         ValueError: len(r) must be >= k
     """
-    assert k >= 1
-    r = np.asarray(r)[:k] != 0
-    if r.size != k:
-        raise ValueError('Relevance score length < k')
+    sorted_indexes = np.flip(np.argsort(y_pred))
+    sorted_actual_ranks = y_true[sorted_indexes]
 
-    return np.mean(r)
+    print('Sorted', sorted_actual_ranks)
+
+    return np.mean(sorted_actual_ranks[:k] > 0)
 
 
-def average_precision(r: np.ndarray):
+
+
+
+
+
+    # assert k >= 1
+    # r = np.asarray(r)[:k] != 0
+    # if r.size != k:
+    #     raise ValueError('Relevance score length < k')
+
+    # return np.mean(r)
+
+
+def average_precision(y_pred: np.ndarray, y_true: np.ndarray):
     """
     Score is average precision (area under PR curve)
     Relevance is binary (nonzero is relevant).
@@ -158,69 +111,75 @@ def average_precision(r: np.ndarray):
     Returns:
         Average precision
     """
-    r = np.asarray(r) != 0
-    out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
-    if not out:
-        return 0.
+    sorted_indexes = np.flip(np.argsort(y_pred))
+    sorted_actual_ranks = y_true[sorted_indexes]
 
-    return np.mean(out)
+    precisions = np.array([precision_at_k(y_pred, y_true, k) for k in range(1, sorted_actual_ranks.shape[0] + 1)])
 
+    if np.sum(sorted_actual_ranks > 0) < DEFAULT_EPS:
+        return 0.0
 
-def mean_average_precision(rs: np.ndarray):
-    """
-    Score is mean average precision
-    Relevance is binary (nonzero is relevant).
-
-    Args:
-        rs: Iterator of relevance scores (list or numpy) in rank order
-            (first element is the first item)
-    Returns:
-        Mean average precision
-    """
-    return np.mean([average_precision(r) for r in rs])
+    avg_prec = np.sum((sorted_actual_ranks > 0) * precisions) / np.sum(sorted_actual_ranks > 0)
+    # print('Avg prec', avg_prec)
+    return avg_prec
+    
 
 
-def dcg_at_k(r: np.ndarray, k: int, method=0):
-    """Score is discounted cumulative gain (dcg)
-    Relevance is positive real values.  Can use binary
-    as the previous methods.
+# def mean_average_precision(rs: np.ndarray):
+#     """
+#     Score is mean average precision
+#     Relevance is binary (nonzero is relevant).
 
-    Args:
-        r: Relevance scores (list or numpy) in rank order
-            (first element is the first item)
-        k: Number of results to consider
-        method: If 0 then weights are [1.0, 1.0, 0.6309, 0.5, 0.4307, ...]
-                If 1 then weights are [1.0, 0.6309, 0.5, 0.4307, ...]
-    Returns:
-        Discounted cumulative gain
-    """
-    r = np.asfarray(r)[:k]
-    if r.size:
-        if method == 0:
-            return r[0] + np.sum(r[1:] / np.log2(np.arange(2, r.size + 1)))
-        elif method == 1:
-            return np.sum(r / np.log2(np.arange(2, r.size + 2)))
-        else:
-            raise ValueError('method must be 0 or 1.')
-    return 0.
+#     Args:
+#         rs: Iterator of relevance scores (list or numpy) in rank order
+#             (first element is the first item)
+#     Returns:
+#         Mean average precision
+#     """
+#     return np.mean([average_precision(r) for r in rs])
 
 
-def ndcg_at_k(r: np.ndarray, k: int, method=0):
-    """
-    Score is normalized discounted cumulative gain (ndcg)
-    Relevance is positive real values.  Can use binary
-    as the previous methods.
+# def dcg_at_k(r: np.ndarray, k: int, method=0):
+#     """Score is discounted cumulative gain (dcg)
+#     Relevance is positive real values.  Can use binary
+#     as the previous methods.
 
-    Args:
-        r: Relevance scores (list or numpy) in rank order
-            (first element is the first item)
-        k: Number of results to consider
-        method: If 0 then weights are [1.0, 1.0, 0.6309, 0.5, 0.4307, ...]
-                If 1 then weights are [1.0, 0.6309, 0.5, 0.4307, ...]
-    Returns:
-        Normalized discounted cumulative gain
-    """
-    dcg_max = dcg_at_k(sorted(r, reverse=True), k, method)
-    if not dcg_max:
-        return 0.
-    return dcg_at_k(r, k, method) / dcg_max
+#     Args:
+#         r: Relevance scores (list or numpy) in rank order
+#             (first element is the first item)
+#         k: Number of results to consider
+#         method: If 0 then weights are [1.0, 1.0, 0.6309, 0.5, 0.4307, ...]
+#                 If 1 then weights are [1.0, 0.6309, 0.5, 0.4307, ...]
+#     Returns:
+#         Discounted cumulative gain
+#     """
+#     r = np.asfarray(r)[:k]
+#     if r.size:
+#         if method == 0:
+#             return r[0] + np.sum(r[1:] / np.log2(np.arange(2, r.size + 1)))
+#         elif method == 1:
+#             return np.sum(r / np.log2(np.arange(2, r.size + 2)))
+#         else:
+#             raise ValueError('method must be 0 or 1.')
+#     return 0.
+
+
+# def ndcg_at_k(r: np.ndarray, k: int, method=0):
+#     """
+#     Score is normalized discounted cumulative gain (ndcg)
+#     Relevance is positive real values.  Can use binary
+#     as the previous methods.
+
+#     Args:
+#         r: Relevance scores (list or numpy) in rank order
+#             (first element is the first item)
+#         k: Number of results to consider
+#         method: If 0 then weights are [1.0, 1.0, 0.6309, 0.5, 0.4307, ...]
+#                 If 1 then weights are [1.0, 0.6309, 0.5, 0.4307, ...]
+#     Returns:
+#         Normalized discounted cumulative gain
+#     """
+#     dcg_max = dcg_at_k(sorted(r, reverse=True), k, method)
+#     if not dcg_max:
+#         return 0.
+#     return dcg_at_k(r, k, method) / dcg_max

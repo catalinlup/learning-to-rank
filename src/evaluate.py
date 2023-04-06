@@ -58,6 +58,8 @@ for qid in data.keys():
         continue
  
     predicted_ranks = ranker(model, features)
+    print('Predicted ranks', predicted_ranks)
+    print('Scores', scores)
 
     for metric_name in experiment['metrics'].keys():
         metrics_acc[metric_name].append(experiment['metrics'][metric_name](predicted_ranks, scores))

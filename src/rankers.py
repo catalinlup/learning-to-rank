@@ -10,12 +10,31 @@ def simple_ranker(net: SimpleNet, X: np.ndarray):
     """
     Ranks a batch of documents using simple net
     """
+    print(X.shape)
     X = torch.from_numpy(X).type(torch.FloatTensor)
     predicted = net(X)
 
-    # print(predicted)
+    print(predicted.shape)
+    print(predicted)
 
     return predicted.detach().numpy().T[0]
+
+
+def _approx_ndcg_ranker_helper(i, predicted):
+    return 1 + np.sum(predicted[i] < predicted)
+
+def approx_ndcg_ranker(net: SimpleNet, X: np.ndarray):
+    X = torch.from_numpy(X).type(torch.FloatTensor)
+    predicted = net(X)
+    predicted = predicted.detach().numpy().T
+    # print(predicted.shape)
+    ranks = list(np.zeros_like(predicted))
+
+    for i in range(len(ranks)):
+        ranks[i] = _approx_ndcg_ranker_helper(i, predicted)
+
+    print(ranks)
+    return np.array(ranks)
 
 
 def pairwise_ranker(net: RankNet, X: np.ndarray):
