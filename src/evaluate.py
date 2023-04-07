@@ -53,7 +53,7 @@ for qid in data.keys():
         scores.append(score)
         features.append(feature)
 
-    # scores = np.array(scores)
+    scores = scores[0]
     features = np.stack(features)
 
     if np.sum(scores) < 1:
