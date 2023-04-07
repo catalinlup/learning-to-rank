@@ -23,9 +23,9 @@ evaluation_folder = sys.argv[2]
 def load_experiment_batches():
     evaluation_folder = f"../data/evaluation/{evaluation_folder}"
     qids, y, X = load_dataset(evaluation_folder)
-    X_norm = normalize_features(X)
+    X_normalized = [normalize_features(x) for x in X]
     # group the retrieved documents by query
-    return group_data_by_query_id(qids, y, X_norm)
+    return group_data_by_query_id(qids, y, X_normalized)
 
 
 data = load_experiment_batches()
