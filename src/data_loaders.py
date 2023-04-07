@@ -138,6 +138,7 @@ def get_pairwise_dataset_fast(path: str):
     pairwise_features = []
 
     for i, qid in enumerate(unique_qids):
+        print(f'{i} / {len(unique_qids)}')
         indices = torch.nonzero(t_qids == qid).T[0]
         X = features[indices]
         y = scores[indices]
