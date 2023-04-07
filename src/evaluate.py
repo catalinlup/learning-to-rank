@@ -16,7 +16,7 @@ import json
 
 experiment = EXPERIMENTS[sys.argv[1]]
 EVALUATION_FOLDER = sys.argv[2]
-N = int(sys.argv[3])
+# N = int(sys.argv[3])
 
 
 # load the experiment batches
@@ -24,7 +24,8 @@ N = int(sys.argv[3])
 def load_experiment_batches():
     evaluation_folder = f"../data/evaluation/{EVALUATION_FOLDER}"
     qids, y, X = load_dataset(evaluation_folder)
-    X_normalized = [normalize_features(x) for x in X]
+    X_normalized = normalize_features(X)
+    # X_normalized = [normalize_features(x) for x in X]
     # group the retrieved documents by query
     return group_data_by_query_id(qids, y, X_normalized)
 
@@ -49,9 +50,9 @@ all_qids = list(data.keys())
 
 print(all_qids)
 
-cut_qids = np.array(all_qids)[:N]
+# cut_qids = np.array(all_qids)[:N]
 
-for qid in cut_qids:
+for qid in all_qids:
     batch = data[qid]
     scores = []
     features = []
