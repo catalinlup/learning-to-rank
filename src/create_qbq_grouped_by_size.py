@@ -67,8 +67,7 @@ batches_to_tensor(batches_test)
 
 
 
-print(batches[8]['X'].shape)
-print(batches_test[8]['X'].shape)
+
 
 pickle.dump(batches, open(f'../data/train/{TARGET_DATA_SET}/batches.pickle', 'wb'))
 pickle.dump(batches_test, open(f'../data/train/{TARGET_DATA_SET}/batches_test.pickle', 'wb'))
