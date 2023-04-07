@@ -15,13 +15,13 @@ from metrics import ndsg
 import json
 
 experiment = EXPERIMENTS[sys.argv[1]]
-evaluation_folder = sys.argv[2]
+EVALUATION_FOLDER = sys.argv[2]
 
 
 # load the experiment batches
 
 def load_experiment_batches():
-    evaluation_folder = f"../data/evaluation/{evaluation_folder}"
+    evaluation_folder = f"../data/evaluation/{EVALUATION_FOLDER}"
     qids, y, X = load_dataset(evaluation_folder)
     X_normalized = [normalize_features(x) for x in X]
     # group the retrieved documents by query
