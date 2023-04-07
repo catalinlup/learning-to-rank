@@ -53,11 +53,12 @@ for qid in data.keys():
         scores.append(score)
         features.append(feature)
 
-    scores = np.array(scores)
+    # scores = np.array(scores)
     features = np.stack(features)
 
     if np.sum(scores) < 1:
         continue
+    
  
     predicted_ranks = ranker(model, features)
     print('Predicted ranks', predicted_ranks)
