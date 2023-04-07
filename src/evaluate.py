@@ -46,7 +46,7 @@ for metric_name in experiment['metrics'].keys():
 
 all_qids = data.keys()
 
-cut_qids = np.random.choice(all_qids, size=1000)
+cut_qids = np.random.choice(np.array(all_qids), size=1000)
 
 for qid in cut_qids:
     batch = data[qid]
