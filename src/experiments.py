@@ -113,7 +113,7 @@ EXPERIMENTS = {
     },
 
     'MseNet_batched_10k': {
-        'train_folder': '../data/train/GroupedQbQMQ2008',
+        'train_folder': '../data/train/GroupedQbQMSLR10K',
         'experiment_name': 'mse_net_batched',
         'ranker': approx_ndcg_ranker,
         'lr': 5e-5,
@@ -139,7 +139,7 @@ EXPERIMENTS = {
     },
 
     'MseNet_QbQ_10k': {
-        'train_folder': '../data/train/GroupedQbQMQ2008',
+        'train_folder': '../data/train/GroupedQbQMSLR10K',
         'experiment_name': 'mse_net_qbq',
         'ranker': approx_ndcg_ranker,
         'lr': 5e-5,
