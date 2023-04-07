@@ -4,6 +4,17 @@ import numpy as np
 
 DEFAULT_EPS = 10e-10
 
+def generate_random_mask(size, ratio_positives):
+    """
+    Generates a random binary mask of size 'size' having ratio_positives * size 1s
+    """
+    mask = np.zeros(size)
+    mask[:int(ratio_positives * size)] = 1
+    np.random.shuffle(mask)
+    mask = mask.astype(bool)
+
+    return mask
+
 
 def get_torch_device():
     """

@@ -1,31 +1,13 @@
 import numpy as np
-from data_loaders import get_dataset, get_pairwise_dataset
+from data_loaders import get_dataset, get_pairwise_dataset, save_dataset
+from utils import generate_random_mask
 import pickle
 import os
 
-def save_dataset(qids, X, y, folder):
-    """
-    Save the dataset in the provided folder.
-    """
-
-    if not os.path.exists(folder):
-        os.mkdir(folder)
-
-    pickle.dump(qids, open(f'{folder}/qids.pickle', 'wb'))
-    pickle.dump(y, open(f'{folder}/y.pickle', 'wb'))
-    pickle.dump(X, open(f'{folder}/X.pickle', 'wb'))
 
 
-def generate_random_mask(size, ratio_positives):
-    """
-    Generates a random binary mask of size 'size' having ratio_positives * size 1s
-    """
-    mask = np.zeros(size)
-    mask[:int(ratio_positives * size)] = 1
-    np.random.shuffle(mask)
-    mask = mask.astype(bool)
 
-    return mask
+
 
 
 def split_dataset(qids, X, y, evaluation_size=0.1):

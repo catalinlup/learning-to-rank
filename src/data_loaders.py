@@ -1,7 +1,19 @@
 import numpy as np
 import pickle
+import os
 import random
 
+def save_dataset(qids, X, y, folder):
+    """
+    Save the dataset in the provided folder.
+    """
+
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
+    pickle.dump(qids, open(f'{folder}/qids.pickle', 'wb'))
+    pickle.dump(y, open(f'{folder}/y.pickle', 'wb'))
+    pickle.dump(X, open(f'{folder}/X.pickle', 'wb'))
 
 def process_line(line: str) -> np.ndarray:
 
