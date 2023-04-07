@@ -112,6 +112,58 @@ EXPERIMENTS = {
         }
     },
 
+    'MseNet_batched_10k': {
+        'train_folder': '../data/train/GroupedQbQMQ2008',
+        'experiment_name': 'mse_net_batched',
+        'ranker': approx_ndcg_ranker,
+        'lr': 5e-5,
+        'batch_size': 64,
+        'num_epochs': 100,
+        'model_name': 'mse_net_batched.pt',
+        'plot_y_label_name': 'MSE Loss',
+        'plot_name': 'mse_net_batched.png',
+        'model': ApproxNdcgNet(136, 5),
+        'loss_fn': nn.MSELoss(),
+        'layer_structure': [136, 5],
+        'metrics': {
+            'ndsg': ndsg,
+            'ndsg@2': lambda y_pred, y_true: ndsg(y_pred, y_true, k=2),
+            'ndsg@4': lambda y_pred, y_true: ndsg(y_pred, y_true, k=4),
+            'ndsg@6': lambda y_pred, y_true: ndsg(y_pred, y_true, k=6),
+            'precision@2': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 2),
+            'precision@4': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 4),
+            'precision@6': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 6),
+            'average_precision': average_precision
+
+        }
+    },
+
+    'MseNet_QbQ_10k': {
+        'train_folder': '../data/train/GroupedQbQMQ2008',
+        'experiment_name': 'mse_net_qbq',
+        'ranker': approx_ndcg_ranker,
+        'lr': 5e-5,
+        'batch_size': 64,
+        'num_epochs': 100,
+        'model_name': 'mse_net_qbq.pt',
+        'plot_y_label_name': 'MSE Loss',
+        'plot_name': 'mse_net_qbq.png',
+        'model': ApproxNdcgNet(136, 5),
+        'loss_fn': nn.MSELoss(),
+        'layer_structure': [136, 5],
+        'metrics': {
+            'ndsg': ndsg,
+            'ndsg@2': lambda y_pred, y_true: ndsg(y_pred, y_true, k=2),
+            'ndsg@4': lambda y_pred, y_true: ndsg(y_pred, y_true, k=4),
+            'ndsg@6': lambda y_pred, y_true: ndsg(y_pred, y_true, k=6),
+            'precision@2': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 2),
+            'precision@4': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 4),
+            'precision@6': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 6),
+            'average_precision': average_precision
+
+        }
+    },
+
     'NeuralNDCG_batched_10k': {
         'train_folder': '../data/train/GroupedQbQMSLR10K',
         'experiment_name': 'neural_ndcg_net_batched_10K',
@@ -147,7 +199,7 @@ EXPERIMENTS = {
         'batch_size': 64,
         'num_epochs': 30,
         'model_name': 'approx_ndcg_net_batched_10K.pt',
-        'plot_y_label_name': 'Neural NDCG Loss',
+        'plot_y_label_name': 'Approx NDCG Loss',
         'plot_name': 'approx_ndcg_net_batched_10K.png',
         'model': ApproxNdcgNet(136, 5),
         'loss_fn': approxNDCGLoss,
