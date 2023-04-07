@@ -48,7 +48,7 @@ all_qids = list(data.keys())
 
 print(all_qids)
 
-cut_qids = np.random.choice(np.array(all_qids), size=100)
+cut_qids = np.random.choice(np.array(all_qids), size=10)
 
 for qid in cut_qids:
     batch = data[qid]
