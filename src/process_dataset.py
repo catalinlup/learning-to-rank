@@ -402,5 +402,5 @@ def process_MSLR30K_Grouped_QbQ():
 # process_MQ2008_Pairwise()
 # process_MQ2008_Grouped()
 # process_MQ2008_Grouped_QbQ()
-# process_MSLR10K_Pairwise()
-process_MSLR10K_Grouped_QbQ()
+process_MSLR10K_Pairwise()
+# process_MSLR10K_Grouped_QbQ()
