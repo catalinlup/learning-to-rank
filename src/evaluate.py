@@ -16,6 +16,7 @@ import json
 
 experiment = EXPERIMENTS[sys.argv[1]]
 EVALUATION_FOLDER = sys.argv[2]
+N = int(sys.argv[3])
 
 
 # load the experiment batches
@@ -48,7 +49,7 @@ all_qids = list(data.keys())
 
 print(all_qids)
 
-cut_qids = np.random.choice(np.array(all_qids), size=10)
+cut_qids = np.random.choice(np.array(all_qids), size=N)
 
 for qid in cut_qids:
     batch = data[qid]
