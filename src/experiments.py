@@ -141,8 +141,8 @@ EXPERIMENTS = {
     'MseNet_QbQ_10k': {
         'train_folder': '../data/train/GroupedQbQMSLR10K',
         'experiment_name': 'mse_net_qbq_10k',
-        'ranker': approx_ndcg_ranker,
-        'lr': 5e-5,
+        'ranker': simple_ranker,
+        'lr': 1e-3,
         'batch_size': 64,
         'num_epochs': 30,
         'model_name': 'mse_net_qbq_10k.pt',
@@ -151,6 +151,32 @@ EXPERIMENTS = {
         'model': ApproxNdcgNet(136, 5),
         'loss_fn': nn.MSELoss(),
         'layer_structure': [136, 5],
+        'metrics': {
+            'ndsg': ndsg,
+            'ndsg@2': lambda y_pred, y_true: ndsg(y_pred, y_true, k=2),
+            'ndsg@4': lambda y_pred, y_true: ndsg(y_pred, y_true, k=4),
+            'ndsg@6': lambda y_pred, y_true: ndsg(y_pred, y_true, k=6),
+            'precision@2': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 2),
+            'precision@4': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 4),
+            'precision@6': lambda y_pred, y_true: precision_at_k(y_pred, y_true, 6),
+            'average_precision': average_precision
+
+        }
+    },
+
+    'MseNet_QbQ': {
+        'train_folder': '../data/train/GroupedQbQMQ2008',
+        'experiment_name': 'mse_net_qbq',
+        'ranker': simple_ranker,
+        'lr': 1e-3,
+        'batch_size': 64,
+        'num_epochs': 30,
+        'model_name': 'mse_net_qbq.pt',
+        'plot_y_label_name': 'MSE Loss',
+        'plot_name': 'mse_net_qbq.png',
+        'model': ApproxNdcgNet(46, 5),
+        'loss_fn': nn.MSELoss(),
+        'layer_structure': [46, 5],
         'metrics': {
             'ndsg': ndsg,
             'ndsg@2': lambda y_pred, y_true: ndsg(y_pred, y_true, k=2),
