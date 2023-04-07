@@ -2,7 +2,7 @@ import numpy as np
 from data_loaders import get_dataset, get_pairwise_dataset
 import pickle
 
-qids, y, X = get_dataset('../data/MQ2008/min.txt')
+qids, y, X = get_dataset('../data/MSLR-WEB10K/Fold1/train.txt')
 unique_quids = np.unique(qids)
 
 y_grouped = []

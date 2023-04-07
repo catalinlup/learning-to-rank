@@ -1,12 +1,16 @@
 import numpy as np
 from data_loaders import get_dataset, get_pairwise_dataset
 import pickle
-
+import os
 
 def save_dataset(qids, X, y, folder):
     """
     Save the dataset in the provided folder.
     """
+
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
     pickle.dump(qids, open(f'{folder}/qids.pickle', 'wb'))
     pickle.dump(y, open(f'{folder}/y.pickle', 'wb'))
     pickle.dump(X, open(f'{folder}/X.pickle', 'wb'))
@@ -181,6 +185,56 @@ def upsample_dataset(qids: np.ndarray, X: np.ndarray, y: np.ndarray):
 
     return qids_upsampled, y_upsampled, X_upsampled
 
+
+def group_by_qids_qbq(qids, y, X):
+    unique_quids = np.unique(qids)
+
+    y_grouped = []
+    X_grouped = []
+    qids_grouped = []
+
+    for qid in unique_quids:
+        mask = (qids == qid)
+
+        y_g = y[mask]
+        X_g = X[mask]
+
+
+        y_grouped.append(y_g)
+        X_grouped.append(X_g)
+        qids_grouped.append(qid)
+
+    qids_grouped = np.array(qids_grouped)
+    return qids_grouped, y_grouped, X_grouped
+
+def group_by_qids(qids, y, X):
+    """
+    Groups the dataset by query id
+    """
+    unique_quids = np.unique(qids)
+    y_grouped = []
+    X_grouped = []
+    qids_grouped = []
+
+    for qid in unique_quids:
+        mask = (qids == qid)
+
+        y_g = y[mask]
+        X_g = X[mask]
+
+        if y_g.shape[0] != 8:
+            continue
+
+        y_grouped.append(y_g)
+        X_grouped.append(X_g)
+        qids_grouped.append(qid)
+
+    # print(y_grouped[100].shape)
+    y_grouped = np.stack(y_grouped)
+    X_grouped = np.stack(X_grouped)
+    qids_grouped = np.array(qids_grouped)
+    return qids_grouped, y_grouped, X_grouped
+
 # Split the MQ2008 dataset
 def process_MQ2008():
     """
@@ -220,37 +274,11 @@ def process_MQ2008_Grouped():
     """
 
     qids, y, X = get_dataset('../data/MQ2008/min.txt')
-    unique_quids = np.unique(qids)
 
-    y_grouped = []
-    X_grouped = []
-    qids_grouped = []
 
-    for qid in unique_quids:
-        mask = (qids == qid)
-
-        y_g = y[mask]
-        X_g = X[mask]
-
-        if y_g.shape[0] != 8:
-            continue
-
-        y_grouped.append(y_g)
-        X_grouped.append(X_g)
-        qids_grouped.append(qid)
-
-    # print(y_grouped[100].shape)
-    y_grouped = np.stack(y_grouped)
-    X_grouped = np.stack(X_grouped)
-    qids_grouped = np.array(qids_grouped)
-
-    # print(y_grouped.shape)
-    # print(X_grouped.shape)
-    # print(qids_grouped.shape)
+    qids_grouped, y_grouped, X_grouped = group_by_qids(qids, y, X)
 
     qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = split_dataset(qids_grouped, X_grouped, y_grouped)
-
-    # print(X_train.shape)
 
     # save the evaluation dataset
     save_dataset(qids_evaluation, X_evaluation, y_evaluation, '../data/evaluation/GroupedMQ2008')
@@ -259,30 +287,16 @@ def process_MQ2008_Grouped():
     # save the upsampled dataset
     save_dataset(qids_train, X_train, y_train, '../data/train/GroupedMQ2008')
 
+
+
 def process_MQ2008_Grouped_QbQ():
     """
     Process the MQ2008 pairwise dataset grouped by query
     """
 
     qids, y, X = get_dataset('../data/MQ2008/min.txt')
-    unique_quids = np.unique(qids)
+    qids_grouped, y_grouped, X_grouped = group_by_qids_qbq(qids, y, X)
 
-    y_grouped = []
-    X_grouped = []
-    qids_grouped = []
-
-    for qid in unique_quids:
-        mask = (qids == qid)
-
-        y_g = y[mask]
-        X_g = X[mask]
-
-
-        y_grouped.append(y_g)
-        X_grouped.append(X_g)
-        qids_grouped.append(qid)
-
-    qids_grouped = np.array(qids_grouped)
 
 
     qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = split_dataset_qbq(qids_grouped, X_grouped, y_grouped)
@@ -293,7 +307,118 @@ def process_MQ2008_Grouped_QbQ():
 
     save_dataset(qids_train, X_train, y_train, '../data/train/GroupedQbQMQ2008')
 
+
+
+
+
+def load_folded_dataset(folder_path, fold_paths=[], get_data=lambda x: []):
+    """
+    Load the folded dataset
+    """
+
+    qids_train_folds = []
+    y_train_folds = []
+    X_train_folds = []
+
+    qids_evaluation_folds = []
+    y_evaluation_folds = []
+    X_evaluation_folds = []
+
+    for fold in fold_paths:
+        qids_train_fold, y_train_fold, X_train_fold = get_data(os.path.join(folder_path, fold, 'train.txt'))
+        qids_test_fold, y_test_fold, X_test_fold = get_data(os.path.join(folder_path, fold, 'test.txt'))
+        qids_vali_fold, y_vali_fold, X_vali_fold = get_data(os.path.join(folder_path, fold, 'vali.txt'))
+
+        qids_train_folds.append(qids_train_fold)
+        qids_train_folds.append(qids_test_fold)
+        qids_evaluation_folds.append(qids_vali_fold)
+
+        y_train_folds.append(y_train_fold)
+        y_train_folds.append(y_test_fold)
+        y_evaluation_folds.append(y_vali_fold)
+
+        X_train_folds.append(X_train_fold)
+        X_train_folds.append(X_test_fold)
+        X_evaluation_folds.append(X_vali_fold)
+
+    # print(qids_train_folds)
+
+    return np.concatenate(qids_train_folds), np.concatenate(y_train_folds), np.concatenate(X_train_folds), np.concatenate(qids_evaluation_folds), np.concatenate(y_evaluation_folds), np.concatenate(X_evaluation_folds)
+
+
+
+
+def process_MSLR_pairwise(dataset_name, folder_path, folds = []):
+    """
+    Processes in pairwise format
+    """
+    qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = load_folded_dataset(folder_path, folds, get_pairwise_dataset)
+
+    save_dataset(qids_evaluation, X_evaluation, y_evaluation, f'../data/evaluation/{dataset_name}')
+
+    qids_upsampled, y_upsampled, X_upsampled = upsample_pairwise_dataset(qids_train, X_train, y_train)
+    save_dataset(qids_upsampled, y_upsampled, X_upsampled, f'../data/train/{dataset_name}')
+
+
+def process_MSLR_grouped(dataset_name, folder_path, folds = []):
+    """
+    Process MSLR in grouped format
+    """
+    qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = load_folded_dataset(folder_path, folds, get_dataset)
+
+    qids_train_grouped, y_train_grouped, X_train_grouped = group_by_qids(qids_train, y_train, X_train)
+    qids_evaluation_grouped, y_evaluation_grouped, X_evaluation_grouped = group_by_qids(qids_evaluation, y_evaluation, X_evaluation)
+
+    save_dataset(qids_evaluation_grouped, X_evaluation_grouped, y_evaluation_grouped, f'../data/evaluation/{dataset_name}')
+    save_dataset(qids_train_grouped, X_train_grouped, y_train_grouped, f'../data/train/{dataset_name}')
+
+
+def process_MSLR_grouped_qbq(dataset_name, folder_path, folds=[]):
+    """
+    Process MSLR in grouped qbq format
+    """
+
+    qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = load_folded_dataset(folder_path, folds, get_dataset)
+
+    qids_train_grouped, y_train_grouped, X_train_grouped = group_by_qids_qbq(qids_train, y_train, X_train)
+    qids_evaluation_grouped, y_evaluation_grouped, X_evaluation_grouped = group_by_qids_qbq(qids_evaluation, y_evaluation, X_evaluation)
+
+    save_dataset(qids_evaluation_grouped, X_evaluation_grouped, y_evaluation_grouped, f'../data/evaluation/{dataset_name}')
+    save_dataset(qids_train_grouped, X_train_grouped, y_train_grouped, f'../data/train/{dataset_name}')
+
+def process_MSLR10K_Pairwise():
+    """
+    Processes the MSLR10K dataset
+    """
+    process_MSLR_pairwise("PairwiseMSLR10K", "../data/MSLR-WEB10K", folds=['Fold1', 'Fold2', 'Fold3', 'Fold4', 'Fold5'])
+
+def process_MSLR10K_Grouped():
+    """
+    Processes the MSLR10K grouped dataset
+    """
+    process_MSLR_grouped("GroupedMSLR10K", "../data/MSLR-WEB10K", folds=['Fold1', 'Fold2', 'Fold3', 'Fold4', 'Fold5'])
+
+def process_MSLR10K_Grouped_QbQ():
+    """
+    Processes the MSLR10K grouped query by query dataset
+    """
+    process_MSLR_grouped_qbq("GroupedQbQMSLR10K", "../data/MSLR-WEB10K", folds=['Fold1', 'Fold2', 'Fold3', 'Fold4', 'Fold5'])
+
+
+
+def process_MSLR30K_Pairwise():
+    process_MSLR_pairwise("PairwiseMSLR30K", "../data/MSLR-WEB30K", folds=['Fold1', 'Fold2', 'Fold3', 'Fold4', 'Fold5'])
+
+def process_MSLR30K_Grouped():
+    process_MSLR_grouped("GroupedMSLR30K", "../data/MSLR-WEB30K", folds=['Fold1', 'Fold2', 'Fold3', 'Fold4', 'Fold5'])
+
+def process_MSLR30K_Grouped_QbQ():
+    process_MSLR_grouped_qbq("GroupedQbQMSLR30K", "../data/MSLR-WEB30K", folds=['Fold1', 'Fold2', 'Fold3', 'Fold4', 'Fold5'])
+
+
 # process_MQ2008()
 # process_MQ2008_Pairwise()
 # process_MQ2008_Grouped()
-process_MQ2008_Grouped_QbQ()
+# process_MQ2008_Grouped_QbQ()
+# process_MSLR10K_Pairwise()
+process_MSLR10K_Grouped_QbQ()

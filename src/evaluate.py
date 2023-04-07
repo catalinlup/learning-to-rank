@@ -20,7 +20,8 @@ experiment = EXPERIMENTS[sys.argv[1]]
 # load the experiment batches
 
 def load_experiment_batches():
-    qids, y, X = load_dataset('../data/evaluation/MQ2008')
+    evaluation_folder = f"../data/evaluation/f{experiment['train_folder'].split('/')[-1]}"
+    qids, y, X = load_dataset(evaluation_folder)
     X_norm = normalize_features(X)
     # group the retrieved documents by query
     return group_data_by_query_id(qids, y, X_norm)

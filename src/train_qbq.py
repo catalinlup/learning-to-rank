@@ -9,6 +9,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from experiments import EXPERIMENTS
 import sys
+from utils import get_torch_device
+
+
+device = get_torch_device()
 
 experiment = EXPERIMENTS[sys.argv[1]]
 
@@ -21,15 +25,16 @@ X_normalized = [normalize_features(x) for x in X]
 X_train, X_test, y_train, y_test = train_test_split(X, y_full, test_size=0.33, random_state=21)
 
 # convert the data to tensors
-X_train = [torch.from_numpy(x).type(torch.FloatTensor) for x in X_train]
-X_test = [torch.from_numpy(x).type(torch.FloatTensor) for x in X_test]
-y_train = [torch.from_numpy(x).type(torch.FloatTensor) for x in y_train]
-y_test = [torch.from_numpy(x).type(torch.FloatTensor) for x in y_test]
-X_normalized = [torch.from_numpy(x).type(torch.FloatTensor) for x in X_normalized]
-y_full = [torch.from_numpy(x).type(torch.FloatTensor) for x in y_full]
+X_train = [torch.from_numpy(x).type(torch.FloatTensor).to(device) for x in X_train]
+X_test = [torch.from_numpy(x).type(torch.FloatTensor).to(device) for x in X_test]
+y_train = [torch.from_numpy(x).type(torch.FloatTensor).to(device) for x in y_train]
+y_test = [torch.from_numpy(x).type(torch.FloatTensor).to(device) for x in y_test]
+X_normalized = [torch.from_numpy(x).type(torch.FloatTensor).to(device) for x in X_normalized]
+y_full = [torch.from_numpy(x).type(torch.FloatTensor).to(device) for x in y_full]
 
 # define the model and params
 net = experiment['model']
+net = net.to(device)
 
 optimizer = optim.Adam(net.parameters(), lr=experiment['lr'])
 
