@@ -143,6 +143,7 @@ EXPERIMENTS = {
         'experiment_name': 'approx_ndcg_net_batched_10K',
         'ranker': approx_ndcg_ranker,
         'lr': 1e-4,
+        'weight_decay': 1e-5,
         'batch_size': 64,
         'num_epochs': 30,
         'model_name': 'approx_ndcg_net_batched_10K.pt',
