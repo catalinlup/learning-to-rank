@@ -41,9 +41,6 @@ for i, qid in enumerate(qids):
 
     shape = y.shape[0]
 
-    if shape < FILTER:
-        continue
-
     if shape not in cbatches.keys():
         cbatches[shape] = dict()
         cbatches[shape]['qid'] = []
@@ -56,14 +53,21 @@ for i, qid in enumerate(qids):
 
 
 def batches_to_tensor(batches):
+
+    new_batches = dict()
     for shape in batches.keys():
-        batches[shape]['qid'] = convert_np_to_tensor(np.array(batches[shape]['qid']))
-        batches[shape]['y'] = convert_np_to_tensor(np.stack(batches[shape]['y']))
-        batches[shape]['X'] = convert_np_to_tensor(np.stack(batches[shape]['X']))
+        if len(batches[shape]['qid']) < FILTER:
+            continue
 
+        new_batches[shape] = dict()
+        new_batches[shape]['qid'] = convert_np_to_tensor(np.array(batches[shape]['qid']))
+        new_batches[shape]['y'] = convert_np_to_tensor(np.stack(batches[shape]['y']))
+        new_batches[shape]['X'] = convert_np_to_tensor(np.stack(batches[shape]['X']))
 
-batches_to_tensor(batches)
-batches_to_tensor(batches_test)
+    return new_batches
+
+batches = batches_to_tensor(batches)
+batches_test = batches_to_tensor(batches_test)
 
 
 
