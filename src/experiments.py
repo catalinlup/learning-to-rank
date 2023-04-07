@@ -142,7 +142,7 @@ EXPERIMENTS = {
         'train_folder': '../data/train/GroupedQbQMSLR10K',
         'experiment_name': 'mse_net_qbq_10k',
         'ranker': simple_ranker,
-        'lr': 1e-3,
+        'lr': 1e-1,
         'batch_size': 64,
         'num_epochs': 30,
         'model_name': 'mse_net_qbq_10k.pt',
