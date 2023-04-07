@@ -44,7 +44,11 @@ for metric_name in experiment['metrics'].keys():
 
 # compute the metrics
 
-for qid in data.keys():
+all_qids = data.keys()
+
+cut_qids = np.random.choice(all_qids, size=1000)
+
+for qid in cut_qids:
     batch = data[qid]
     scores = []
     features = []
@@ -53,6 +57,7 @@ for qid in data.keys():
         scores.append(score)
         features.append(feature)
 
+    # scores = np.array(scores)
     scores = scores[0]
     features = np.stack(features)
 
