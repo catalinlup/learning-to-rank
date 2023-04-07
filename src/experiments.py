@@ -147,7 +147,7 @@ EXPERIMENTS = {
         'lr': 1e-4,
         'weight_decay': 1e-5,
         'batch_size': 64,
-        'num_epochs': 100,
+        'num_epochs': 10,
         'model_name': 'approx_ndcg_net_qbq_10k.pt',
         'plot_y_label_name': 'Approx NDCG Loss',
         'plot_name': 'approx_ndcg_net_qbq_10k.png',
