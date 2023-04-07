@@ -1,9 +1,10 @@
 import numpy as np
-from data_loaders import get_dataset, get_pairwise_dataset, save_dataset
+from data_loaders import get_dataset, get_pairwise_dataset, save_dataset, get_pairwise_dataset_fast
 from utils import generate_random_mask
 import pickle
 import os
-
+from compute_pairwise_dataset import compute_pairwise_dataset
+import torch
 
 
 
@@ -327,14 +328,46 @@ def load_folded_dataset(folder_path, fold_paths=[], get_data=lambda x: []):
 
     return np.concatenate(qids_train_folds), np.concatenate(y_train_folds), np.concatenate(X_train_folds), np.concatenate(qids_evaluation_folds), np.concatenate(y_evaluation_folds), np.concatenate(X_evaluation_folds)
 
+def load_folded_dataset_torch(folder_path, fold_paths=[], get_data=lambda x: []):
+    """
+    Load the folded dataset
+    """
 
+    qids_train_folds = []
+    y_train_folds = []
+    X_train_folds = []
+
+    qids_evaluation_folds = []
+    y_evaluation_folds = []
+    X_evaluation_folds = []
+
+    for fold in fold_paths:
+        qids_train_fold, y_train_fold, X_train_fold = get_data(os.path.join(folder_path, fold, 'train.txt'))
+        qids_test_fold, y_test_fold, X_test_fold = get_data(os.path.join(folder_path, fold, 'test.txt'))
+        qids_vali_fold, y_vali_fold, X_vali_fold = get_data(os.path.join(folder_path, fold, 'vali.txt'))
+
+        qids_train_folds.append(qids_train_fold)
+        qids_train_folds.append(qids_test_fold)
+        qids_evaluation_folds.append(qids_vali_fold)
+
+        y_train_folds.append(y_train_fold)
+        y_train_folds.append(y_test_fold)
+        y_evaluation_folds.append(y_vali_fold)
+
+        X_train_folds.append(X_train_fold)
+        X_train_folds.append(X_test_fold)
+        X_evaluation_folds.append(X_vali_fold)
+
+    # print(qids_train_folds)
+
+    return torch.concat(qids_train_folds), torch.concat(y_train_folds), torch.concat(X_train_folds), torch.concat(qids_evaluation_folds), torch.concat(y_evaluation_folds), torch.concat(X_evaluation_folds)
 
 
 def process_MSLR_pairwise(dataset_name, folder_path, folds = []):
     """
     Processes in pairwise format
     """
-    qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = load_folded_dataset(folder_path, folds, get_pairwise_dataset)
+    qids_train, y_train, X_train, qids_evaluation, y_evaluation, X_evaluation = load_folded_dataset_torch(folder_path, folds, get_pairwise_dataset_fast)
 
     save_dataset(qids_evaluation, X_evaluation, y_evaluation, f'../data/evaluation/{dataset_name}')
 

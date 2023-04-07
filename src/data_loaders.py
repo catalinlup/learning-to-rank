@@ -2,6 +2,9 @@ import numpy as np
 import pickle
 import os
 import random
+from compute_pairwise_dataset import compute_pairwise_dataset
+import torch
+from utils import get_torch_device
 
 def save_dataset(qids, X, y, folder):
     """
@@ -107,6 +110,8 @@ def get_pairwise_dataset(path: str):
 
     for i, qid in enumerate(unique_qids):
         print(f'{i} / {len(unique_qids)}')
+
+
         f, p = compute_pairwise_dataset_for_query(qid, data_by_query)
 
 
@@ -115,6 +120,37 @@ def get_pairwise_dataset(path: str):
         pairwise_features += f
     
     return np.array(pairwise_qids), np.array(pairwise_target_probabilities), np.stack(pairwise_features)
+
+def get_pairwise_dataset_fast(path: str):
+    qids, scores, features = get_dataset(path)
+
+    
+    scores = torch.from_numpy(scores).type(torch.FloatTensor).to(get_torch_device()) 
+    features = torch.from_numpy(features).type(torch.FloatTensor).to(get_torch_device()) 
+
+
+    # group dataset by query id
+    unique_qids = list(set(list(qids)))
+    t_qids = torch.from_numpy(qids).type(torch.FloatTensor).to(get_torch_device()) 
+
+    pairwise_qids = []
+    pairwise_target_probabilities = []
+    pairwise_features = []
+
+    for i, qid in enumerate(unique_qids):
+        indices = torch.nonzero(t_qids == qid).T[0]
+        X = features[indices]
+        y = scores[indices]
+        X_pairwise, y_pairwise = compute_pairwise_dataset(X, y)
+        qid_pairwise = qid * torch.ones_like(y_pairwise)
+        qid_pairwise = qid_pairwise.type(torch.IntTensor)
+
+        pairwise_qids.append(qid_pairwise)
+        pairwise_target_probabilities.append(y_pairwise)
+        pairwise_features.append(X_pairwise)
+        
+    
+    return torch.concat(pairwise_qids), torch.concat(pairwise_target_probabilities), torch.concat(pairwise_features, dim=0)
 
 
 def load_dataset(folder):
