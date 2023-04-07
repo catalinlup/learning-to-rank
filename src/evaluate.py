@@ -44,7 +44,9 @@ for metric_name in experiment['metrics'].keys():
 
 # compute the metrics
 
-all_qids = data.keys()
+all_qids = list(data.keys())
+
+print(all_qids)
 
 cut_qids = np.random.choice(np.array(all_qids), size=1000)
 
