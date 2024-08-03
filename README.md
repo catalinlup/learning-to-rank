@@ -11,3 +11,5 @@ The aim of this project is to present and discuss an empirical comparison of the
 
 - **What is the best loss functions for Learning-to-rank applied to a neural network for each considered metric?**
 - **Can the results of one dataset be generalized to other datasets?**
+
+For a full report of the project see this [document](https://github.com/catalinlup/learning-to-rank/blob/main/full_report.pdf).
